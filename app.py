@@ -3,30 +3,35 @@ import mysql.connector
 import pandas as pd
 from datetime import date
 
-# 🚀 Set page config first — ALWAYS do this first!
+# 1. Set page config FIRST thing!
 st.set_page_config(page_title="Inventory Manager", page_icon="📦")
 
-# Access secrets safely
-MYSQL_CONFIG = st.secrets["mysql"]  # make sure your secrets.toml has this structure
-
-# Highlight low stock function
+# Highlight low stock
 def highlight_low_stock(val):
     if isinstance(val, (int, float)):
         return 'color: red; font-weight: bold' if val < 5 else ''
     return ''
 
-# DB connection helper
+# DB Connection with hardcoded credentials
 def get_connection():
-    return mysql.connector.connect(
-        host=MYSQL_CONFIG["host"],
-        user=MYSQL_CONFIG["user"],
-        password=MYSQL_CONFIG["password"],
-        database=MYSQL_CONFIG["database"]
-    )
+    try:
+        return mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="SHIVOM@270206",
+            database="inventorydb"
+        )
+    except mysql.connector.Error as err:
+        st.error("❌ Could not connect to the database.")
+        st.code(str(err))
+        return None
 
-# Load data from given table
+
+# Load table data
 def load_data(table):
     conn = get_connection()
+    if not conn:
+        return pd.DataFrame()
     cursor = conn.cursor()
     cursor.execute(f"SELECT * FROM {table}")
     data = cursor.fetchall()
@@ -39,7 +44,7 @@ def load_data(table):
 
     return pd.DataFrame(data, columns=columns)
 
-# Add new product
+# Add product
 def add_product(name, cat_id, sup_id, price, qty):
     conn = get_connection()
     cursor = conn.cursor()
@@ -60,7 +65,7 @@ def add_product(name, cat_id, sup_id, price, qty):
     conn.commit()
     conn.close()
 
-# Edit product record
+# Edit Product Record
 def edit_product_record(prod_id, new_price, new_qty):
     conn = get_connection()
     cursor = conn.cursor()
@@ -72,7 +77,7 @@ def edit_product_record(prod_id, new_price, new_qty):
     conn.close()
     st.success(f"✅ Product {prod_id} updated successfully!")
 
-# Record a transaction (sale)
+# Record transaction
 def record_transaction(prod_id, cust_id, qty):
     conn = get_connection()
     cursor = conn.cursor()
@@ -114,7 +119,7 @@ def delete_product(prod_id):
         st.success(f"🗑️ Product '{product[0]}' deleted successfully!")
     conn.close()
 
-# Main Streamlit app UI
+# Streamlit App UI
 st.title("📦 Inventory Management System")
 
 menu = st.sidebar.selectbox("📋 Choose Action", ["View Tables", "Add Product", "Record Sale", "Edit Record", "Delete Product", "Reports"])
