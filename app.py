@@ -14,13 +14,13 @@ def highlight_low_stock(val):
 
 # DB Connection with hardcoded credentials
 def get_connection():
-    try:
-        return mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="SHIVOM@270206",
-            database="inventorydb"
-        )
+    return mysql.connector.connect(
+        host="yamabiko.proxy.rlwy.net",
+        port=38739,
+        user="root",
+        password="SHIVOM@270206",
+        database="railway"
+    )
     except mysql.connector.Error as err:
         st.error("❌ Could not connect to the database.")
         st.code(str(err))
